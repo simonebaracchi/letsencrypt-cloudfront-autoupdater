@@ -1,0 +1,10 @@
+config.yaml
+account.key
+build/
+dist/
+__pycache__/
+*.pyc
+lib
+lib64
+bin
+pyvenv.cfg

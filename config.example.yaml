@@ -1,0 +1,40 @@
+# letsencrypt-cloudfront-autoupdater configuration
+#
+# Copy this file to config.yaml and fill in your values.
+
+# ─── Lambda deployment settings ───────────────────────────────────────────────
+# Used by deploy.sh only — the Lambda function itself ignores this section.
+lambda:
+  function_name: "letsencrypt-cloudfront-autoupdater"
+  role_arn: "arn:aws:iam::123456789012:role/letsencrypt-cloudfront-autoupdater"
+  # Region for the Lambda function. us-east-1 recommended (CloudFront requires
+  # ACM certificates in us-east-1, and co-locating avoids cross-region calls).
+  region: "us-east-1"
+
+# ─── ACME / Let's Encrypt ─────────────────────────────────────────────────────
+acme:
+  # Contact email registered with Let's Encrypt (required).
+  email: "admin@example.com"
+
+  # ACME directory URL. Default is Let's Encrypt production.
+  # Switch to staging while testing to avoid rate limits.
+  directory_url: "https://acme-v02.api.letsencrypt.org/directory"
+  # directory_url: "https://acme-staging-v02.api.letsencrypt.org/directory"
+
+# ─── CloudFront distributions ─────────────────────────────────────────────────
+# List the CloudFront distribution IDs to manage. The tool will auto-detect
+# the alternate domain names (CNAMEs) and S3 origin bucket from each
+# distribution's configuration. Override with explicit values if needed.
+distributions:
+  - id: "E1234567890ABC"
+    # domains (optional) — override auto-detected CNAMEs from the distribution.
+    # Useful if you only want a certificate for a subset of the aliases.
+    # domains:
+    #   - "example.com"
+    #   - "www.example.com"
+
+    # s3_bucket (optional) — override the auto-detected S3 origin bucket.
+    # s3_bucket: "my-website-bucket"
+
+  # Add more distributions as needed:
+  # - id: "EABCDEF1234567"
