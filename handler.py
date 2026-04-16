@@ -143,7 +143,11 @@ def split_pem_chain(pem_text):
 
 
 def import_to_acm(acm_client, cert_pem, key_pem, chain_pem, existing_arn=None):
-    """Import certificate into ACM. Re-imports in place if existing_arn is set."""
+    """Import certificate into ACM. Re-imports in place if existing_arn is set.
+
+    If re-import fails due to key-type mismatch (e.g. existing cert uses EC
+    but new cert uses RSA), falls back to importing as a brand-new certificate.
+    """
     params = {
         "Certificate": cert_pem,
         "PrivateKey": key_pem,
@@ -153,7 +157,18 @@ def import_to_acm(acm_client, cert_pem, key_pem, chain_pem, existing_arn=None):
     if existing_arn:
         params["CertificateArn"] = existing_arn
 
-    resp = acm_client.import_certificate(**params)
+    try:
+        resp = acm_client.import_certificate(**params)
+    except acm_client.exceptions.ValidationException:
+        if existing_arn:
+            logger.warning(
+                "Re-import into %s failed (key type mismatch?), "
+                "importing as new certificate", existing_arn,
+            )
+            params.pop("CertificateArn")
+            resp = acm_client.import_certificate(**params)
+        else:
+            raise
     return resp["CertificateArn"]
 
 
