@@ -18,13 +18,13 @@ The DNS-01 challenge would require programmatic access to the DNS provider (e.g.
 
 Cloudfront requires a SSL certificate to serve files, we need the file to pass the HTTP-01 challenge to get the SSL certificate.
 
-To solve this chicken-and-egg problem, the first SSL certificate should still be obtained with DNS challenge.
+To solve this chicken-and-egg problem, the first SSL certificate should still be obtained with DNS challenge. In case you are requesting a certificate for more than one domain, list all of them.
 
 ```bash
-# certbot certonly --manual --preferred-challenges dns -d <domain>
+# certbot certonly --manual --preferred-challenges dns -d <domain> [-d <domain> [...]]
 ```
 
-Note that usually `<domain>` should include `www.`, and consequently, the DNS TXT entry typically looks like `_acme-challenge.www` in your DNS provider.
+Note that usually `<domain>` should include `www.`, and consequently, the DNS TXT entry typically looks like `_acme-challenge.www` in your DNS provider. When asking for multiple domains, more DNS TXT entries will be needed.
 
 The `fullchain.pem` and `privkey.pem` files can then be used to setup ACM:
 
@@ -33,7 +33,7 @@ The `fullchain.pem` and `privkey.pem` files can then be used to setup ACM:
 # cat /etc/letsencrypt/live/DOMAIN-NAME/privkey.pem
 ```
 
-The first part of `fullchain.pem` is the certificate body, the second part is the certificate chain (mentioned as optional in ACM, but mandatory here). The contents of `privkey.pem` are the certificate private key. Make extra-sure that you are importing the certificate in the `us-east-1` region of ACM. Then you can add the domain in CloudFront.
+The first part of `fullchain.pem` is the certificate body, the second part is the certificate chain (mentioned as optional in ACM, but mandatory here). If you are creating a certificate for more domains, the first part will be the certificate body, and everything else is the certificate chain. The contents of `privkey.pem` are the certificate private key. Make extra-sure that you are importing the certificate in the `us-east-1` region of ACM. Then you can add the domain in CloudFront.
 
 
 ## Prerequisites
